@@ -1,0 +1,92 @@
+package Carrera;
+import robocode.*;
+
+//import java.awt.Color;
+
+// API help : https://robocode.sourceforge.io/docs/robocode/robocode/Robot.html
+
+/**
+ * Carrera - a robot by (your name here)
+ */
+public class Carrera extends Robot
+{
+	/**
+	 * run: It will first find a wall to anchor off of
+	 * 		Its just moves up and down the wall
+	 * 		If the enemy approaches it will turn 90 and will go to the opposite wall
+	 * 		It should dodge every shot until the enemy runs out of energy
+	 * 		Then it shoots one bullet for the kill
+	 * 		It's main purpose is to stalluntil they run out of energy
+	 */
+	 boolean rightOrLeft = false; //Boolean for if it should turn left or right when it chooses to run away
+	 boolean chasing = false; //Boolean to represent if the enemy robot is close-to/chasing it
+	 boolean firstContact; //Boolean to check if it was the first time the bot hit the wall.]
+
+	public void run() {
+		//Set colors
+		chasing = false;
+		firstContact = false;
+		
+		//Turns left to face a wall
+		turnLeft(getHeading() % 90);
+		ahead(Math.max(getBattleFieldWidth(), getBattleFieldHeight())); //moves the maximum possible length for the battlefield
+				
+		turnRight(90);
+		
+		while(true) {
+			// Replace the next 4 lines with any behavior you would like
+			if (!chasing){
+				ahead(100);
+				turnRadarLeft(360);
+			} else if (chasing){
+				if (rightOrLeft){
+					turnLeft(90);
+					ahead(Math.max(getBattleFieldWidth(), getBattleFieldHeight()));
+					turnLeft(90);
+				} else {
+					turnRight(90);
+					ahead(Math.max(getBattleFieldWidth(), getBattleFieldHeight()));
+					turnRight(90);
+				}
+			}
+		}
+	}
+
+	/**
+	 * onScannedRobot: What to do when you see another robot
+	 */
+	public void onScannedRobot(ScannedRobotEvent e) {
+		// Replace the next line with any behavior you would like
+		if (e.getDistance() <= 235) {
+			chasing = true;
+			firstContact = false;
+		}
+	}
+
+	/**
+	 * onHitByBullet: What to do when you're hit by a bullet
+	 */
+	public void onHitByBullet(HitByBulletEvent e) {
+		// Replace the next line with any behavior you would like
+		chasing = true;
+		firstContact = false;
+	}
+	
+	/**
+	 * onHitWall: What to do when you hit a wall
+	 */
+	public void onHitWall(HitWallEvent e) {
+		// Replace the next line with any behavior you would like
+		stop();
+		if (!firstContact){
+			firstContact = true;
+			if (chasing) {
+				chasing = false;
+			}
+		} else {
+			turnLeft(180);
+			rightOrLeft = !rightOrLeft; //When it hits a wall, sets right or left to the opposite of itself
+		}
+	}
+	
+}
