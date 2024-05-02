@@ -6,7 +6,7 @@ import robocode.*;
 // API help : https://robocode.sourceforge.io/docs/robocode/robocode/Robot.html
 
 /**
- * Carrera - a robot by (your name here)
+ * Carrera - a robot by (Christian Carrera)
  */
 public class Carrera extends Robot
 {
@@ -61,6 +61,11 @@ public class Carrera extends Robot
 			chasing = true;
 			firstContact = false;
 		}
+		
+		if (getGunHeat() == 0) {
+			turnGunRight(getHeading() - getGunHeading() + e.getBearing());
+			fire(3);
+		}
 	}
 
 	/**
@@ -87,6 +92,10 @@ public class Carrera extends Robot
 			turnLeft(180);
 			rightOrLeft = !rightOrLeft; //When it hits a wall, sets right or left to the opposite of itself
 		}
+	}
+	
+	public double getFutureY(double heading, double velocity, double time) {
+		return 1;
 	}
 	
 }
