@@ -1,5 +1,6 @@
 package Carrera;
 import robocode.*;
+import java.awt.Color;
 
 //import java.awt.Color;
 
@@ -12,41 +13,47 @@ public class Carrera extends Robot
 {
 	/**
 	 * run: It will first find a wall to anchor off of
-	 * 		Its just moves up and down the wall
+	 * 		Its just moves up and down a wall
 	 * 		If the enemy approaches it will turn 90 and will go to the opposite wall
-	 * 		It should dodge every shot until the enemy runs out of energy
-	 * 		Then it shoots one bullet for the kill
-	 * 		It's main purpose is to stalluntil they run out of energy
+	 * 		It's movement should be unpredictable enough so that predictive shooting cannot hit it consistantly
+	 * 		It will fire at the current enemy's position frequently
+	 * 		
 	 */
 	 boolean rightOrLeft = false; //Boolean for if it should turn left or right when it chooses to run away
-	 boolean chasing = false; //Boolean to represent if the enemy robot is close-to/chasing it
-	 boolean firstContact; //Boolean to check if it was the first time the bot hit the wall.]
+	 boolean chasing = false; //Boolean to represent if the enemy robot is close-to/chasing it, it will also switch if it gets hit by a bullet
+	 boolean firstContact; //Boolean to check if it was the first time the bot hit the wall, will switch back to false when there is a robot chasing it.
 
 	public void run() {
-		//Set colors
-		chasing = false;
-		firstContact = false;
+		//set colors
+		setBodyColor(new Color(255, 255, 255)); 
+		setGunColor(new Color(0, 0, 0));
+		setRadarColor(new Color(255, 255, 255));
+		setBulletColor(new Color(255, 255, 255));
+		setScanColor(new Color(0, 0, 0));
+		
+		chasing = false; //Chasing initially set to false
+		firstContact = false; //First-Contact set to false;
 		
 		//Turns left to face a wall
-		turnLeft(getHeading() % 90);
+		turnLeft(getHeading() % 90); //It will turn  to a 90 degree angle
 		ahead(Math.max(getBattleFieldWidth(), getBattleFieldHeight())); //moves the maximum possible length for the battlefield
 				
-		turnRight(90);
+		turnRight(90); //After it stops/ hits a wall it will turn right 90 degrees.
 		
 		while(true) {
 			// Replace the next 4 lines with any behavior you would like
-			if (!chasing){
-				ahead(100);
-				turnRadarLeft(360);
-			} else if (chasing){
-				if (rightOrLeft){
-					turnLeft(90);
-					ahead(Math.max(getBattleFieldWidth(), getBattleFieldHeight()));
-					turnLeft(90);
-				} else {
-					turnRight(90);
-					ahead(Math.max(getBattleFieldWidth(), getBattleFieldHeight()));
-					turnRight(90);
+			if (!chasing){ //If chasing is false
+				ahead(100); //It will move 100 "tiles"
+				turnRadarLeft(360); //And spin the radar a full 360 degrees
+			} else if (chasing){ // If chasing is true
+				if (rightOrLeft){ //If it needs to turn left to reach the opposite wall, than rightOrLeft is true
+					turnLeft(90); //Turns back left
+					ahead(Math.max(getBattleFieldWidth(), getBattleFieldHeight())); //Move to the opposite side of the battlefield
+					turnLeft(90); //And turn back left
+				} else { //If it needs to turn right to reach the opposite wall than rightOrLeft is false
+					turnRight(90); //It will turn Right
+					ahead(Math.max(getBattleFieldWidth(), getBattleFieldHeight())); //Moves to the opposite side of the battlefield
+					turnRight(90); //Turns back right
 				}
 			}
 		}
@@ -57,14 +64,14 @@ public class Carrera extends Robot
 	 */
 	public void onScannedRobot(ScannedRobotEvent e) {
 		// Replace the next line with any behavior you would like
-		if (e.getDistance() <= 235) {
-			chasing = true;
-			firstContact = false;
+		if (e.getDistance() <= 235) { //First it will check if the distance between the enemy and itself is 235 or lower
+			chasing = true; //If it is than it sets chasing to true, and first contact to false, making it go to the opposite wall
+			firstContact = false; //So it does not turn 180 degress
 		}
 		
-		if (getGunHeat() == 0) {
+		if (getGunHeat() == 0) { //If gunHeat is 0, it will fire at the enemy's current position
 			turnGunRight(getHeading() - getGunHeading() + e.getBearing());
-			fire(3);
+			fire(3); 
 		}
 	}
 
@@ -73,8 +80,8 @@ public class Carrera extends Robot
 	 */
 	public void onHitByBullet(HitByBulletEvent e) {
 		// Replace the next line with any behavior you would like
-		chasing = true;
-		firstContact = false;
+		chasing = true; //If the robot gets hit it will immediately move towards the opposite wall
+		firstContact = false; //Sets firstContact to false to that it does not turn 180 degrees
 	}
 	
 	/**
@@ -82,20 +89,16 @@ public class Carrera extends Robot
 	 */
 	public void onHitWall(HitWallEvent e) {
 		// Replace the next line with any behavior you would like
-		stop();
-		if (!firstContact){
+		stop(); //Whenever it hits a wall it will stop
+		if (!firstContact){ //If first contact is false, it sets first Contact to true, so that next time it hits a wall it will turn 180 degrees
 			firstContact = true;
-			if (chasing) {
-				chasing = false;
-			}
-		} else {
+			if (chasing) { //If chasing is true
+				chasing = false; //It will set chasing to false, once it hits a wall
+			} 
+		} else { //If firstContact is true, than it will do its normal behavior of going up and down a wall until it either gets hit by a bullet, or an enemy is close
 			turnLeft(180);
-			rightOrLeft = !rightOrLeft; //When it hits a wall, sets right or left to the opposite of itself
+			rightOrLeft = !rightOrLeft; //When it hits a wall, sets rightOrLeft to the opposite of itself, so that when it does turn to the opposite wall it will turn the right direction.
 		}
-	}
-	
-	public double getFutureY(double heading, double velocity, double time) {
-		return 1;
 	}
 	
 }
